@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/coreos/etcd v3.3.18+incompatible // indirect
-	github.com/yaice-rx/yaice v0.0.0-20191206085754-de61aa9380fa
+	github.com/yaice-rx/yaice v0.0.0-20191209093403-d7e31a175717
 	go.uber.org/atomic v1.5.1 // indirect
 	go.uber.org/multierr v1.4.0 // indirect
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
