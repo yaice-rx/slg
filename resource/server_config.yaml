@@ -1,7 +1,7 @@
 EtcdConnectString: 127.0.0.1:2379
 EtcdNameSpace: YaIce_Service
-PortStart: 10001
-PortEnd: 10100
+PortStart: 30001
+PortEnd: 30100
 HttpPort: 8888
 ClusterName: YaIce
 IntranetHost: 10.0.0.10
