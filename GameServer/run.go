@@ -1,31 +1,22 @@
 package GameServer
 
 import (
-	"encoding/json"
-	"github.com/sirupsen/logrus"
+	"context"
 	"github.com/yaice-rx/yaice"
-	"github.com/yaice-rx/yaice/cron"
-	"github.com/yaice-rx/yaice/network"
-	proto_ "github.com/yaice-rx/yaice/proto"
+	"google.golang.org/grpc"
+	"slg/GameServer/rpc"
+	"slg/Rpc"
 )
 
-func Run(type_ string, groupId string, allowConn bool) {
-	server := yaice.NewServer(type_, groupId, allowConn)
-	server.AddRouter(&proto_.S2CServiceAssociate{}, func(conn network.IConn, content []byte) {
-		var data proto_.S2CServiceAssociate
-		if json.Unmarshal(content, &data) != nil {
-			return
-		}
-		logrus.Println("接收到服务器的消息数据", data.Pid, data.TypeName)
-		//心跳
-		cron.CronMgr.AddCronTask(10, -1, func() {
-			data := proto_.C2SServicePing{}
-			if err := conn.SendMsg(&data); err != nil {
-				logrus.Error("send err ", err)
-				return
-			}
-		})
+func Run(type_ string, groupId string) {
+	server := yaice.NewServer(type_, groupId, []string{"127.0.0.1:2379"})
+	server.AddClientRpc(func(c *grpc.ClientConn) {
+		client := auth_game_proto.NewVerifyUserServiceClient(c)
+		client.VerifyUser(context.Background(), &auth_game_proto.A2GVerifyUser{PlayerGuid: groupId})
 	})
-	server.AdaptationNetwork("tcp")
-	server.Serve()
+	server.AddServerRpc(func(s *grpc.Server) {
+		auth_game_proto.RegisterVerifyUserServiceServer(s, &rpc.VerifyUserService{})
+	})
+	server.MatchNetwork("tcp")
+	server.Serve(20001, 20100)
 }

@@ -10,7 +10,6 @@ import (
 
 var Type = flag.String("type", "auth", "Input Server Type")
 var Group = flag.String("group", "king_war", "Input Server Type")
-var AllowConnect = flag.Bool("allowConnect", false, "")
 
 func main() {
 	flag.Parse()
@@ -43,10 +42,10 @@ func main() {
 
 	switch *Type {
 	case "auth":
-		GateManager.Run(*Type, *Group, *AllowConnect)
+		GateManager.Run(*Type, *Group)
 		break
 	case "game":
-		GameServer.Run(*Type, *Group, *AllowConnect)
+		GameServer.Run(*Type, *Group)
 		break
 	default:
 		fmt.Println("please select service type")
