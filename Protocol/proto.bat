@@ -1,0 +1,1 @@
+protoc.exe --go_out=.  ./inside/r_game_auth.proto

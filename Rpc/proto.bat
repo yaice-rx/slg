@@ -1,1 +1,0 @@
-protoc.exe --go_out=plugins=grpc:.  ./auth_game.proto

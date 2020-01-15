@@ -1,11 +1,12 @@
 package main
 
 import (
+	"SLGGAME/AuthManager"
+	"SLGGAME/GameServer"
+	"SLGGAME/Service"
 	"flag"
 	"fmt"
 	_ "net/http/pprof"
-	"slg/GameServer"
-	"slg/GateManager"
 )
 
 var Type = flag.String("type", "auth", "Input Server Type")
@@ -13,42 +14,32 @@ var Group = flag.String("group", "king_war", "Input Server Type")
 
 func main() {
 	flag.Parse()
-	/*runtime.GOMAXPROCS(6) // 限制 CPU 使用数，避免过载
-	runtime.SetMutexProfileFraction(1) // 开启对锁调用的跟踪
-	runtime.SetBlockProfileRate(1) // 开启对阻塞操作的跟踪
-	go func() {
-		// 启动一个 http server，注意 pprof 相关的 handler 已经自动注册过了
-		if err := http.ListenAndServe(":6060", nil); err != nil {
-			logrus.Debug(err)
-		}
-		os.Exit(0)
-	}()*/
-	/*f, _ := os.Create("./" + *Type + ".pprof")
-	pprof.StartCPUProfile(f)
-	c := make(chan os.Signal)
-	//监听指定信号 ctrl+c kill
-	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	go func() {
-		for s := range c {
-			switch s {
-			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				fmt.Println("退出", s)
-				pprof.StopCPUProfile()
-			default:
-				fmt.Println("other", s)
-			}
-		}
-	}()*/
-
+	IsEndRuning := make(chan bool)
+	var serve Service.IService
 	switch *Type {
 	case "auth":
-		GateManager.Run(*Type, *Group)
+		serve = AuthManager.NewServer(*Type, *Group)
 		break
 	case "game":
-		GameServer.Run(*Type, *Group)
+		serve = GameServer.NewServer(*Type, *Group)
 		break
 	default:
 		fmt.Println("please select service type")
 		break
 	}
+	if serve == nil {
+		IsEndRuning <- true
+	}
+	//注册协议
+	serve.RegisterProtoHandler()
+	//启动服务之前的操作
+	serve.BeforeRunThreadHook()
+	//启动服务
+	serve.Run()
+	//启动之后的操作
+	serve.AfterRunThreadHook()
+	//结束进程
+	<-IsEndRuning
+	//关闭服务通道
+	close(IsEndRuning)
 }

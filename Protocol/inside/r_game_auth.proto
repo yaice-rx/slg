@@ -1,0 +1,20 @@
+syntax="proto3";
+package inside;
+
+//向auth服务器注册
+message r_game_auth_register_request{
+    string pid = 1;
+}
+
+//向服务器定时发送ping,保证存活
+message r_game_auth_register_callback{
+}
+
+//ping
+message r_game_auth_ping_request{
+    string pid = 1;
+}
+
+//ping
+message r_game_auth_ping_callback{
+}
