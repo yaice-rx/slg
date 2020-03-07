@@ -1,12 +1,13 @@
 package AuthManager
 
 import (
+	"SLGGAME/AuthManager/Logic"
+	"SLGGAME/AuthManager/ServiceGroup"
 	"SLGGAME/Protocol/inside"
 	"SLGGAME/Service"
 	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice"
 	"github.com/yaice-rx/yaice/config"
-	"github.com/yaice-rx/yaice/network"
 	"net/http"
 	"os"
 	"runtime"
@@ -35,13 +36,9 @@ func NewServer(type_ string, serverGroup string) Service.IService {
 
 func (s *AuthServer) RegisterProtoHandler() {
 	//开启路由
-	s.server.AddRouter(&inside.RGameAuthRegisterRequest{}, func(conn network.IConn, content []byte) {
-		logrus.Info("register .....")
-	})
+	s.server.AddRouter(&inside.RGameAuthRegisterRequest{}, ServiceGroup.ServiceRegisterConn)
 
-	s.server.AddRouter(&inside.RGameAuthPingRequest{}, func(conn network.IConn, content []byte) {
-		logrus.Info("ping .....")
-	})
+	s.server.AddRouter(&inside.RGameAuthPingRequest{}, ServiceGroup.ServicePingConn)
 }
 
 func (s *AuthServer) BeforeRunThreadHook() {
@@ -58,23 +55,23 @@ func (s *AuthServer) Run() {
 	insidePort := make(chan int)
 	//开启外网
 	s.config.OutHost = "10.0.0.10"
+	s.config.OutPort = 50001
 	go func() {
-		data := s.server.ListenTCP(30001, 30100)
-		outerPort <- data
+		http.HandleFunc("/login_dev", Logic.Login)
+		http.ListenAndServe(":50001", nil)
 	}()
-	s.config.OutPort = <-outerPort
 	//开启内网
 	s.config.InHost = "10.0.0.10"
 	go func() {
-		data := s.server.ListenTCP(30001, 30100)
+		data := s.server.Listen(nil, "tcp", 30001, 30100)
 		insidePort <- data
 	}()
 	s.config.InPort = <-insidePort
+	//注册服务配置
+	s.server.RegisterServeNodeData(*s.config)
 	//关闭端口通道
 	close(outerPort)
 	close(insidePort)
-	//注册服务配置
-	s.server.RegisterNodeData(*s.config)
 }
 
 func (s *AuthServer) ObserverPProf(addr string) {

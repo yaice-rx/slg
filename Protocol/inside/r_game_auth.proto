@@ -3,7 +3,8 @@ package inside;
 
 //向auth服务器注册
 message r_game_auth_register_request{
-    string pid = 1;
+    string  host = 1;
+    int32   port = 2;
 }
 
 //向服务器定时发送ping,保证存活

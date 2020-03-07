@@ -136,12 +136,10 @@ github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5 h1:LnC5Kc
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 h1:eY9dn8+vbi4tKz5Qo6v2eYzo7kUS51QINcR5jNpbZS8=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
-github.com/yaice-rx/yaice v0.0.0-20200110080517-8b9291ad4a1d h1:rupA4io6T3VdsbCLCrK7aR4ouepdhy/AswRvQBad7+A=
-github.com/yaice-rx/yaice v0.0.0-20200110080517-8b9291ad4a1d/go.mod h1:+bTS6RdtY46IFNpG+7eq/hdw+K5D/rvyMxwYCx1iWLE=
-github.com/yaice-rx/yaice v0.0.0-20200114034829-59e79bd9a514 h1:gaCxtY4H1zhKbCJLcN/qo/sbUqIHymz0uwqYPDaHT8c=
-github.com/yaice-rx/yaice v0.0.0-20200114034829-59e79bd9a514/go.mod h1:+bTS6RdtY46IFNpG+7eq/hdw+K5D/rvyMxwYCx1iWLE=
-github.com/yaice-rx/yaice v0.0.0-20200115032937-d242ec87a366 h1:/ez/Dt2Rh3ZCbnZeGPoXUztVvAWsbQ0jhG707tRd4ho=
-github.com/yaice-rx/yaice v0.0.0-20200115032937-d242ec87a366/go.mod h1:+bTS6RdtY46IFNpG+7eq/hdw+K5D/rvyMxwYCx1iWLE=
+github.com/yaice-rx/yaice v0.0.0-20200228065926-642c80d618ef h1:KJweUe3DoReWHZplUzFDYqcd4MHmO2sYFRKNc3VxoyA=
+github.com/yaice-rx/yaice v0.0.0-20200228065926-642c80d618ef/go.mod h1:+bTS6RdtY46IFNpG+7eq/hdw+K5D/rvyMxwYCx1iWLE=
+github.com/yaice-rx/yaice v0.0.0-20200306104911-f9f5163acb49 h1:hDSbQHi7XvFXYQBoBXI60hqfoCLCj/vCvMV/cs38vKc=
+github.com/yaice-rx/yaice v0.0.0-20200306104911-f9f5163acb49/go.mod h1:+bTS6RdtY46IFNpG+7eq/hdw+K5D/rvyMxwYCx1iWLE=
 go.etcd.io/bbolt v1.3.3 h1:MUGmc65QhB3pIlaQ5bB4LwqSj6GIonVJXpZiaKNyaKk=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=

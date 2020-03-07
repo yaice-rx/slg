@@ -1,54 +1,18 @@
-package main
+package network
 
-import (
-	"SLGGAME/AuthManager"
-	"SLGGAME/GameServer"
-	"SLGGAME/Service"
-	"flag"
-	"fmt"
-	_ "net/http/pprof"
+const (
+	ConstMsgLength          = 4 //消息长度占用字节位
+	ConstCheckSumLength     = 8 //CRC校验码占用位置位
+	ConstMsgTypeLength      = 1 //消息类型
+	ConstISPosLength        = 8
+	ConstLoginSeqLength     = 8
+	ConstTokenSignLenLength = 2
+	ConstLoginAuthResLength = 1
+	ConstServerGuidLength   = 8
+	ConstProtoLenLength     = 8
+	ConstProtoGuidLength    = 8
+	ConstProtocolNumLength  = 8
 )
-
-var Type = flag.String("type", "auth", "Input Server Type")
-var Group = flag.String("group", "king_war", "Input Server Type")
-
-func main() {
-	flag.Parse()
-	/*data := []byte{0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x2D,0x00,0x00,0x00,0x0C,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x1E,0x36,0x3E,0x4F,0x39}
-	fmt.Println("===========>",GenerateCRCCheckCode(data))
-	return*/
-	IsEndRuning := make(chan bool)
-	defer func() {
-		//关闭服务通道
-		close(IsEndRuning)
-	}()
-	var serve Service.IService
-	switch *Type {
-	case "auth":
-		serve = AuthManager.NewServer(*Type, *Group)
-		break
-	case "game":
-		serve = GameServer.NewServer(*Type, *Group)
-		break
-	default:
-		fmt.Println("please select service type")
-		break
-	}
-	if serve == nil {
-		IsEndRuning <- true
-	}
-	//注册协议
-	serve.RegisterProtoHandler()
-	//启动服务之前的操作
-	serve.BeforeRunThreadHook()
-	//启动服务
-	serve.Run()
-	//启动之后的操作
-	serve.AfterRunThreadHook()
-	//结束进程
-	<-IsEndRuning
-	return
-}
 
 const CrcSeed uint = 0xFFFFFFFF
 
@@ -107,39 +71,16 @@ var CrcTable []uint = []uint{
 	0x2D02EF8D,
 }
 
+type Protocol struct {
+}
+
 //生成
-func GenerateCRCCheckCode(data []byte) uint {
+func (p *Protocol) GenerateCRCCheckCode(data []byte) uint {
 	var crc uint
 	for i := 0; i < len(data); i++ {
 		crc = crc ^ CrcSeed
 		crc = CrcTable[(crc^uint(data[i]))&0xFF] ^ (crc >> 8)
 		crc = crc ^ CrcSeed
 	}
-	return crc
-}
-
-func CheckCRCCodeRight(buffer []byte, offset int, count int) uint {
-	var crc uint
-	if buffer == nil {
-		return 1
-	}
-
-	if len(buffer) < 0 {
-		return 1
-	}
-
-	if offset < 0 || offset+count > len(buffer) {
-		return 1
-	}
-
-	crc ^= CrcSeed
-
-	for i := count; count >= i; i-- {
-		offset = offset + 1
-		crc = CrcTable[(crc^uint(buffer[offset]))&0xFF] ^ (crc >> 8)
-	}
-
-	crc ^= CrcSeed
-
 	return crc
 }

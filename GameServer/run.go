@@ -1,7 +1,10 @@
 package GameServer
 
 import (
+	"SLGGAME/GameServer/Logic"
+	"SLGGAME/GameServer/Package"
 	"SLGGAME/Protocol/inside"
+	"SLGGAME/Protocol/outside"
 	"SLGGAME/Service"
 	"fmt"
 	"github.com/coreos/etcd/mvcc/mvccpb"
@@ -37,17 +40,17 @@ func NewServer(type_ string, serverGroup string) Service.IService {
 }
 
 func (s *GameServer) RegisterProtoHandler() {
-
+	s.server.AddRouter(&outside.C2SGameCert{}, Logic.C2SGameCertHandler)
 }
 
 func (s *GameServer) BeforeRunThreadHook() {
-	s.server.WatchNodeData(func(isAdd mvccpb.Event_EventType, config *config.Config) {
+	s.server.WatchServeNodeData(func(isAdd mvccpb.Event_EventType, config *config.Config) {
 		switch isAdd {
 		case mvccpb.PUT:
 			fmt.Println("add")
 			if config.TypeId == "auth" {
-				conn := s.server.DialTCP(config.InHost + ":" + strconv.Itoa(config.InPort))
-				conn.Send(&inside.RGameAuthRegisterRequest{Pid: strconv.Itoa(os.Getpid())})
+				conn := s.server.Dial(nil, "tcp", config.InHost+":"+strconv.Itoa(config.InPort))
+				conn.Send(&inside.RGameAuthRegisterRequest{Host: s.config.OutHost, Port: int32(s.config.OutPort)})
 				go func() {
 					for _ = range time.Tick(5 * time.Second) {
 						conn.Send(&inside.RGameAuthPingRequest{})
@@ -73,27 +76,30 @@ func (s *GameServer) Run() {
 	//开启外网
 	s.config.OutHost = "10.0.0.10"
 	go func() {
-		data := s.server.ListenTCP(30001, 30100)
+		data := s.server.Listen(Package.NewPackage(), "tcp", 30001, 30100)
 		outerPort <- data
 	}()
 	s.config.OutPort = <-outerPort
 	//开启内网
 	s.config.InHost = "10.0.0.10"
 	go func() {
-		data := s.server.ListenTCP(30001, 30100)
+		data := s.server.Listen(nil, "tcp", 30001, 30100)
 		insidePort <- data
 	}()
 	s.config.InPort = <-insidePort
+	//注册服务配置
+	s.server.RegisterServeNodeData(*s.config)
 	//关闭端口通道
 	close(outerPort)
 	close(insidePort)
-	//注册服务配置
-	s.server.RegisterNodeData(*s.config)
 	//开启连接
-	for _, serverConf := range s.server.GetNodeData("") {
+	for _, serverConf := range s.server.GetServeNodeData("") {
 		if serverConf.TypeId == "auth" {
-			conn := s.server.DialTCP(serverConf.InHost + ":" + strconv.Itoa(serverConf.InPort))
-			conn.Send(&inside.RGameAuthRegisterRequest{Pid: strconv.Itoa(os.Getpid())})
+			conn := s.server.Dial(nil, "tcp", serverConf.InHost+":"+strconv.Itoa(serverConf.InPort))
+			if conn == nil {
+				return
+			}
+			conn.Send(&inside.RGameAuthRegisterRequest{Host: s.config.OutHost, Port: int32(s.config.OutPort)})
 			go func() {
 				for _ = range time.Tick(5 * time.Second) {
 					conn.Send(&inside.RGameAuthPingRequest{})

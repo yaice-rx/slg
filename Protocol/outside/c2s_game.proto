@@ -1,0 +1,6 @@
+syntax="proto3";
+package outside;
+
+//向game服务器发起认证
+message c2s_game_cert{
+}
