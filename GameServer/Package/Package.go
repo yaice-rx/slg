@@ -3,6 +3,7 @@ package Package
 import (
 	"SLGGAME/Protocol/outside"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice/network"
 	"github.com/yaice-rx/yaice/utils"
 )
@@ -38,7 +39,7 @@ func (p *Package) Unpack(buff []byte) ([]byte, []byte, int32, error) {
 		return []byte{}, buff[MsgLengthLen+MsgSumLen+MsgTypeLen+MsgPosLen : MsgLengthLen+MsgSumLen+MsgTypeLen+MsgPosLen+MsgLoginSeqLen], protocolNum, nil
 		break
 	case 3:
-
+		logrus.Info("receive data ...")
 		break
 	}
 	return nil, nil, 0, nil

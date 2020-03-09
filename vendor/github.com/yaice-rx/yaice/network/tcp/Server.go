@@ -1,12 +1,10 @@
 package tcp
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice/network"
 	"net"
 	"strconv"
 	"sync"
-	"time"
 )
 
 type Server struct {
@@ -21,7 +19,7 @@ func _NewServer() network.IServer {
 	return &Server{}
 }
 
-func (s *Server) Listen(startPort int, endPort int) int {
+func (s *Server) Listen(packet network.IPacket, startPort int, endPort int) int {
 	port := make(chan int)
 	defer close(port)
 	for i := startPort; i < endPort; i++ {
@@ -29,16 +27,13 @@ func (s *Server) Listen(startPort int, endPort int) int {
 			tcpAddr, err := net.ResolveTCPAddr("tcp", ":"+strconv.Itoa(i))
 			if nil != err {
 				port <- -1
-				logrus.Debug("tcp resolve address :", i, " fail,error :", err)
 				return
 			}
 			listener, err := net.ListenTCP("tcp", tcpAddr)
 			if nil != err {
 				port <- -1
-				logrus.Debug("tcp listen port :", i, " fail,error :", err)
 				return
 			}
-			logrus.Debug("listen port", i)
 			port <- i
 			s.listener = listener
 			for {
@@ -49,8 +44,7 @@ func (s *Server) Listen(startPort int, endPort int) int {
 				if ConnManagerMgr.Len() > 5000 {
 					tcpConn.Close()
 				} else {
-					tcpConn.SetReadDeadline(time.Now().Add(5 * time.Second))
-					conn := NewConn(tcpConn)
+					conn := NewConn(tcpConn, packet)
 					ConnManagerMgr.Add(conn)
 					conn.Start()
 				}

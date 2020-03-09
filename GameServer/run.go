@@ -47,7 +47,6 @@ func (s *GameServer) BeforeRunThreadHook() {
 	s.server.WatchServeNodeData(func(isAdd mvccpb.Event_EventType, config *config.Config) {
 		switch isAdd {
 		case mvccpb.PUT:
-			fmt.Println("add")
 			if config.TypeId == "auth" {
 				conn := s.server.Dial(nil, "tcp", config.InHost+":"+strconv.Itoa(config.InPort))
 				conn.Send(&inside.RGameAuthRegisterRequest{Host: s.config.OutHost, Port: int32(s.config.OutPort)})
