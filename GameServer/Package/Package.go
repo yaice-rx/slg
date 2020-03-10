@@ -1,46 +1,31 @@
 package Package
 
 import (
-	"SLGGAME/Protocol/outside"
-	"fmt"
-	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice/network"
-	"github.com/yaice-rx/yaice/utils"
 )
 
 type Package struct {
 }
 
 const (
-	MsgLengthLen    = 4
-	MsgSumLen       = 8
-	MsgTypeLen      = 1
-	MsgPosLen       = 8
-	MsgLoginSeqLen  = 8
-	MsgTokenSignLen = 4
+	MsgLengthLen = 4
+	MsgSumLen    = 8
+	MsgTypeLen   = 1
 )
 
 func NewPackage() network.IPacket {
 	return &Package{}
 }
 
-func (p *Package) Pack(msg network.IMessage) []byte {
-	fmt.Println("--------------------发送网络数据调用----------------")
+func (p *Package) GetHeadLen() uint32 {
+	return MsgLengthLen + MsgSumLen + MsgTypeLen
+}
+
+func (p *Package) Pack(msg network.TransitData) []byte {
 	return nil
 }
 
-func (p *Package) Unpack(buff []byte) ([]byte, []byte, int32, error) {
-	msgType := buff[MsgLengthLen+MsgSumLen : MsgLengthLen+MsgSumLen+MsgTypeLen]
-	switch int(msgType[0]) {
-	case 1:
-		//当消息类型处于1的时候，利用protobuf伪造一个消息
-		msgName := utils.GetProtoName(&outside.C2SGameCert{})
-		protocolNum := utils.ProtocalNumber(msgName)
-		return []byte{}, buff[MsgLengthLen+MsgSumLen+MsgTypeLen+MsgPosLen : MsgLengthLen+MsgSumLen+MsgTypeLen+MsgPosLen+MsgLoginSeqLen], protocolNum, nil
-		break
-	case 3:
-		logrus.Info("receive data ...")
-		break
-	}
-	return nil, nil, 0, nil
+func (p *Package) Unpack(binaryData []byte) (network.IMessage, error) {
+
+	return nil, nil
 }

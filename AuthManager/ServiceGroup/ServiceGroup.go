@@ -4,6 +4,7 @@ import (
 	"SLGGAME/Protocol/inside"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
+	"github.com/yaice-rx/yaice/log"
 	"github.com/yaice-rx/yaice/network"
 )
 
@@ -37,9 +38,10 @@ func ServiceRegisterConn(conn network.IConn, content []byte) {
 	data := inside.RGameAuthRegisterRequest{}
 	err := proto.Unmarshal(content, &data)
 	if err != nil {
-		logrus.Debug("连接服务器的参数错误，不能解析。。。")
+		log.AppLogger.Debug("连接服务器的参数错误，不能解析。。。" + err.Error())
 		return
 	}
+	log.AppLogger.Info("接受到参数：" + data.Host)
 	ServicesMgr.AddService(Service{Host: data.Host, Port: data.Port, group: 1})
 }
 

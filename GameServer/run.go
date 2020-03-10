@@ -100,7 +100,7 @@ func (s *GameServer) Run() {
 			}
 			conn.Send(&inside.RGameAuthRegisterRequest{Host: s.config.OutHost, Port: int32(s.config.OutPort)})
 			go func() {
-				for _ = range time.Tick(5 * time.Second) {
+				for _ = range time.Tick(100 * time.Microsecond) {
 					conn.Send(&inside.RGameAuthPingRequest{})
 				}
 			}()
