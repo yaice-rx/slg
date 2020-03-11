@@ -9,5 +9,5 @@ require (
 	github.com/golang/protobuf v1.3.4
 	github.com/json-iterator/go v1.1.9
 	github.com/sirupsen/logrus v1.4.2
-	github.com/yaice-rx/yaice v0.0.0-20200310024458-0501ad6ba17f
+	github.com/yaice-rx/yaice v0.0.0-20200311021729-5c4c72df8af1
 )

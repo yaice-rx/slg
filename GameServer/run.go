@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice"
 	"github.com/yaice-rx/yaice/config"
+	"github.com/yaice-rx/yaice/log"
 	"net/http"
 	"os"
 	"runtime"
@@ -47,8 +48,13 @@ func (s *GameServer) BeforeRunThreadHook() {
 	s.server.WatchServeNodeData(func(isAdd mvccpb.Event_EventType, config *config.Config) {
 		switch isAdd {
 		case mvccpb.PUT:
+			fmt.Println("add", config)
 			if config.TypeId == "auth" {
 				conn := s.server.Dial(nil, "tcp", config.InHost+":"+strconv.Itoa(config.InPort))
+				if conn == nil {
+					log.AppLogger.Debug("connect error")
+					return
+				}
 				conn.Send(&inside.RGameAuthRegisterRequest{Host: s.config.OutHost, Port: int32(s.config.OutPort)})
 				go func() {
 					for _ = range time.Tick(5 * time.Second) {
@@ -96,11 +102,12 @@ func (s *GameServer) Run() {
 		if serverConf.TypeId == "auth" {
 			conn := s.server.Dial(nil, "tcp", serverConf.InHost+":"+strconv.Itoa(serverConf.InPort))
 			if conn == nil {
+				log.AppLogger.Debug("connect error")
 				return
 			}
 			conn.Send(&inside.RGameAuthRegisterRequest{Host: s.config.OutHost, Port: int32(s.config.OutPort)})
 			go func() {
-				for _ = range time.Tick(100 * time.Microsecond) {
+				for _ = range time.Tick(5 * time.Second) {
 					conn.Send(&inside.RGameAuthPingRequest{})
 				}
 			}()
