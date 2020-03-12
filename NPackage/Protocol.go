@@ -1,4 +1,4 @@
-package network
+package NPackage
 
 const (
 	ConstMsgLength          = 4 //消息长度占用字节位
@@ -14,9 +14,9 @@ const (
 	ConstProtocolNumLength  = 8
 )
 
-const CrcSeed uint = 0xFFFFFFFF
+const CrcSeed int64 = 0xFFFFFFFF
 
-var CrcTable []uint = []uint{
+var CrcTable []int64 = []int64{
 	0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419,
 	0x706AF48F, 0xE963A535, 0x9E6495A3, 0x0EDB8832, 0x79DCB8A4,
 	0xE0D5E91E, 0x97D2D988, 0x09B64C2B, 0x7EB17CBD, 0xE7B82D07,
@@ -75,11 +75,11 @@ type Protocol struct {
 }
 
 //生成
-func (p *Protocol) GenerateCRCCheckCode(data []byte) uint {
-	var crc uint
+func GenerateCRCCheckCode(data []byte) int64 {
+	var crc int64
 	for i := 0; i < len(data); i++ {
 		crc = crc ^ CrcSeed
-		crc = CrcTable[(crc^uint(data[i]))&0xFF] ^ (crc >> 8)
+		crc = CrcTable[(crc^int64(data[i]))&0xFF] ^ (crc >> 8)
 		crc = crc ^ CrcSeed
 	}
 	return crc
