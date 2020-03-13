@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"github.com/gogo/protobuf/proto"
 	"github.com/yaice-rx/yaice/network"
 	"github.com/yaice-rx/yaice/utils"
 )
@@ -48,7 +49,12 @@ func (p *Package) Unpack(binaryData []byte) (network.IMessage, error) {
 			return nil, errors.New("network data sum verify error")
 		}
 		msg.Id = utils.ProtocalNumber(utils.GetProtoName(&outside.C2SGameCert{}))
-		msg.data = binaryData[MsgSumLen+MsgSumLen+MsgTypeLen+MsgIsPos+8:]
+		_CertProto := &outside.C2SGameCert{
+			LoginSeq: utils.BytesToLong(binaryData[MsgSumLen+MsgTypeLen+MsgIsPos : MsgSumLen+MsgTypeLen+MsgIsPos+8]),
+			Token:    binaryData[MsgSumLen+MsgTypeLen+MsgIsPos+8:],
+		}
+		content, _ := proto.Marshal(_CertProto)
+		msg.data = content
 		return msg, nil
 		break
 	case 3:
@@ -61,7 +67,7 @@ func (p *Package) Unpack(binaryData []byte) (network.IMessage, error) {
 			return nil, errors.New("network data sum verify error")
 		}
 		msg.PID = utils.BytesToLong(binaryData[MsgSumLen+MsgTypeLen+MsgIsPos+4 : MsgSumLen+MsgTypeLen+MsgIsPos+4+8])
-		msg.data = binaryData[MsgSumLen+MsgSumLen+MsgTypeLen+MsgIsPos+8+8:]
+		msg.data = []byte{} //binaryData[MsgSumLen+MsgSumLen+MsgTypeLen+MsgIsPos+8+8:]
 		return msg, nil
 		break
 	}
