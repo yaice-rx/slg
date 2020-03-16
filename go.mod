@@ -9,6 +9,8 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.3.4
 	github.com/json-iterator/go v1.1.9
+	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
-	github.com/yaice-rx/yaice v0.0.0-20200311021729-5c4c72df8af1
+	github.com/yaice-rx/yaice v0.0.0-20200316033524-bfadbd2cec79
+	go.uber.org/zap v1.13.0
 )

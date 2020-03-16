@@ -3,8 +3,10 @@ package Logic
 import (
 	"SLGGAME/Protocol/outside"
 	"github.com/golang/protobuf/proto"
+	"github.com/yaice-rx/yaice/log"
 	"github.com/yaice-rx/yaice/network"
 	"github.com/yaice-rx/yaice/utils"
+	"net"
 )
 
 type cert struct {
@@ -15,6 +17,7 @@ type cert struct {
 }
 
 func C2SGameCertHandler(conn network.IConn, content []byte) {
+	log.AppLogger.Info("有服务器连接上来了" + conn.GetConn().(*net.TCPConn).RemoteAddr().String())
 	_ProtoData := outside.C2SGameCert{}
 	err := proto.Unmarshal(content, &_ProtoData)
 	if err != nil {

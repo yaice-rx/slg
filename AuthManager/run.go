@@ -5,9 +5,9 @@ import (
 	"SLGGAME/AuthManager/ServiceGroup"
 	"SLGGAME/Protocol/inside"
 	"SLGGAME/Service"
-	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice"
 	"github.com/yaice-rx/yaice/config"
+	"github.com/yaice-rx/yaice/log"
 	"net/http"
 	"os"
 	"runtime"
@@ -81,7 +81,7 @@ func (s *AuthServer) ObserverPProf(addr string) {
 	go func() {
 		// 启动一个 http server，注意 pprof 相关的 handler 已经自动注册过了
 		if err := http.ListenAndServe(addr, nil); err != nil {
-			logrus.Debug(err)
+			log.AppLogger.Error(err.Error())
 		}
 		os.Exit(0)
 	}()

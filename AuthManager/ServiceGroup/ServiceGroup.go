@@ -41,7 +41,7 @@ func ServiceRegisterConn(conn network.IConn, content []byte) {
 		log.AppLogger.Debug("连接服务器的参数错误，不能解析。。。" + err.Error())
 		return
 	}
-	log.AppLogger.Info("接受到参数：" + data.Host)
+	log.AppLogger.Info("服务器：" + data.Host + ",已经连接上来")
 	ServicesMgr.AddService(Service{Host: data.Host, Port: data.Port, group: 1})
 }
 
