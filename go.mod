@@ -8,9 +8,10 @@ require (
 	github.com/coreos/etcd v3.3.18+incompatible
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.3.4
+	github.com/google/uuid v1.1.1
 	github.com/json-iterator/go v1.1.9
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
-	github.com/yaice-rx/yaice v0.0.0-20200316033524-bfadbd2cec79
+	github.com/yaice-rx/yaice v0.0.0-20200326104547-5b7bd0995e43
 	go.uber.org/zap v1.13.0
 )

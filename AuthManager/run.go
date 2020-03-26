@@ -5,40 +5,46 @@ import (
 	"SLGGAME/AuthManager/ServiceGroup"
 	"SLGGAME/Protocol/inside"
 	"SLGGAME/Service"
+	"SLGGAME/Token"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/yaice-rx/yaice"
 	"github.com/yaice-rx/yaice/config"
 	"github.com/yaice-rx/yaice/log"
+	"github.com/yaice-rx/yaice/utils"
 	"net/http"
 	"os"
 	"runtime"
+	"time"
 )
 
 type AuthServer struct {
 	type_     string
 	groupName string
-	config    *config.Config
+	confMgr   config.IConfig
 	server    yaice.IServer
 }
 
 func NewServer(type_ string, serverGroup string) Service.IService {
-	conf := new(config.Config)
-	conf.TypeId = type_
-	conf.ServerGroup = serverGroup
 	s := &AuthServer{
 		type_:     type_,
 		groupName: serverGroup,
-		config:    conf,
+		confMgr:   config.ConfInstance(),
 	}
+	s.confMgr.SetTypeId(type_)
+	s.confMgr.SetServerGroup(serverGroup)
+	s.confMgr.SetPid(utils.GenSonyflake())
 	server := yaice.NewServer([]string{"127.0.0.1:2379"})
 	s.server = server
 	return s
 }
 
 func (s *AuthServer) RegisterProtoHandler() {
-	//开启路由
-	s.server.AddRouter(&inside.RGameAuthRegisterRequest{}, ServiceGroup.ServiceRegisterConn)
-
-	s.server.AddRouter(&inside.RGameAuthPingRequest{}, ServiceGroup.ServicePingConn)
+	//服务内部注册
+	s.server.AddRouter(&inside.RGameAuthRegisterRequest{}, ServiceGroup.RegisterConnHandler)
+	//Ping
+	s.server.AddRouter(&inside.RGameAuthPingRequest{}, ServiceGroup.PingConnHandler)
+	//玩家登陆验证
+	s.server.AddRouter(&inside.RGameAuthLoginRequest{}, ServiceGroup.LoginHandler)
 }
 
 func (s *AuthServer) BeforeRunThreadHook() {
@@ -53,25 +59,28 @@ func (s *AuthServer) Run() {
 	//设置监听端口通道
 	outerPort := make(chan int)
 	insidePort := make(chan int)
+	//关闭端口通道
+	defer func() {
+		close(outerPort)
+		close(insidePort)
+	}()
 	//开启外网
-	s.config.OutHost = "10.0.0.10"
-	s.config.OutPort = 50001
+	s.confMgr.SetOutHost("10.0.0.10")
+	s.confMgr.SetOutPort(50001)
 	go func() {
-		http.HandleFunc("/login_dev", Logic.Login)
+		http.HandleFunc("/login_dev", s.Login)
 		http.ListenAndServe(":50001", nil)
 	}()
 	//开启内网
-	s.config.InHost = "10.0.0.10"
+	s.confMgr.SetInHost("10.0.0.10")
 	go func() {
 		data := s.server.Listen(nil, "tcp", 30001, 30100)
 		insidePort <- data
 	}()
-	s.config.InPort = <-insidePort
+	s.confMgr.SetInPort(<-insidePort)
 	//注册服务配置
-	s.server.RegisterServeNodeData(*s.config)
-	//关闭端口通道
-	close(outerPort)
-	close(insidePort)
+	s.server.RegisterServeNodeData()
+	return
 }
 
 func (s *AuthServer) ObserverPProf(addr string) {
@@ -85,4 +94,16 @@ func (s *AuthServer) ObserverPProf(addr string) {
 		}
 		os.Exit(0)
 	}()
+}
+
+func (s *AuthServer) Login(w http.ResponseWriter, r *http.Request) {
+	result := Token.Token{
+		Guid:      time.Now().Unix(),
+		SessionId: utils.GenSonyflake(),
+		Port:      s.confMgr.GetInPort(),
+		Host:      s.confMgr.GetInHost(),
+		Result:    1,
+	}
+	data, _ := jsoniter.ConfigCompatibleWithStandardLibrary.Marshal(result)
+	w.Write(Logic.BuildToken(data))
 }

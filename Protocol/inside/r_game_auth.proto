@@ -19,3 +19,13 @@ message r_game_auth_ping_request{
 //ping
 message r_game_auth_ping_callback{
 }
+
+//login
+message r_game_auth_login_request{
+    int64   playerGuid = 1;
+}
+
+//login
+message r_game_auth_login_callback{
+    bool   state = 1;
+}

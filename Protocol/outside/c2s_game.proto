@@ -6,3 +6,12 @@ message c2s_game_cert{
     int64   loginSeq = 1;
     bytes   token = 2;
 }
+//客户端从auth返回http消息后给客户端发送的第一条协议
+message c2g_register{
+}
+//同步时间
+message c2g_sync_time{
+}
+//ping
+message c2g_ping{
+}

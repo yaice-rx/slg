@@ -68,19 +68,121 @@ func (m *C2SGameCert) GetToken() []byte {
 	return nil
 }
 
+//客户端从auth返回http消息后给客户端发送的第一条协议
+type C2GRegister struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *C2GRegister) Reset()         { *m = C2GRegister{} }
+func (m *C2GRegister) String() string { return proto.CompactTextString(m) }
+func (*C2GRegister) ProtoMessage()    {}
+func (*C2GRegister) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c456a5ade9b3be57, []int{1}
+}
+
+func (m *C2GRegister) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_C2GRegister.Unmarshal(m, b)
+}
+func (m *C2GRegister) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_C2GRegister.Marshal(b, m, deterministic)
+}
+func (m *C2GRegister) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_C2GRegister.Merge(m, src)
+}
+func (m *C2GRegister) XXX_Size() int {
+	return xxx_messageInfo_C2GRegister.Size(m)
+}
+func (m *C2GRegister) XXX_DiscardUnknown() {
+	xxx_messageInfo_C2GRegister.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_C2GRegister proto.InternalMessageInfo
+
+//同步时间
+type C2GSyncTime struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *C2GSyncTime) Reset()         { *m = C2GSyncTime{} }
+func (m *C2GSyncTime) String() string { return proto.CompactTextString(m) }
+func (*C2GSyncTime) ProtoMessage()    {}
+func (*C2GSyncTime) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c456a5ade9b3be57, []int{2}
+}
+
+func (m *C2GSyncTime) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_C2GSyncTime.Unmarshal(m, b)
+}
+func (m *C2GSyncTime) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_C2GSyncTime.Marshal(b, m, deterministic)
+}
+func (m *C2GSyncTime) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_C2GSyncTime.Merge(m, src)
+}
+func (m *C2GSyncTime) XXX_Size() int {
+	return xxx_messageInfo_C2GSyncTime.Size(m)
+}
+func (m *C2GSyncTime) XXX_DiscardUnknown() {
+	xxx_messageInfo_C2GSyncTime.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_C2GSyncTime proto.InternalMessageInfo
+
+//ping
+type C2GPing struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *C2GPing) Reset()         { *m = C2GPing{} }
+func (m *C2GPing) String() string { return proto.CompactTextString(m) }
+func (*C2GPing) ProtoMessage()    {}
+func (*C2GPing) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c456a5ade9b3be57, []int{3}
+}
+
+func (m *C2GPing) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_C2GPing.Unmarshal(m, b)
+}
+func (m *C2GPing) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_C2GPing.Marshal(b, m, deterministic)
+}
+func (m *C2GPing) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_C2GPing.Merge(m, src)
+}
+func (m *C2GPing) XXX_Size() int {
+	return xxx_messageInfo_C2GPing.Size(m)
+}
+func (m *C2GPing) XXX_DiscardUnknown() {
+	xxx_messageInfo_C2GPing.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_C2GPing proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*C2SGameCert)(nil), "outside.c2s_game_cert")
+	proto.RegisterType((*C2GRegister)(nil), "outside.c2g_register")
+	proto.RegisterType((*C2GSyncTime)(nil), "outside.c2g_sync_time")
+	proto.RegisterType((*C2GPing)(nil), "outside.c2g_ping")
 }
 
 func init() { proto.RegisterFile("outside/c2s_game.proto", fileDescriptor_c456a5ade9b3be57) }
 
 var fileDescriptor_c456a5ade9b3be57 = []byte{
-	// 106 bytes of a gzipped FileDescriptorProto
+	// 147 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xcb, 0x2f, 0x2d, 0x29,
 	0xce, 0x4c, 0x49, 0xd5, 0x4f, 0x36, 0x2a, 0x8e, 0x4f, 0x4f, 0xcc, 0x4d, 0xd5, 0x2b, 0x28, 0xca,
 	0x2f, 0xc9, 0x17, 0x62, 0x87, 0x8a, 0x2b, 0x39, 0x72, 0xf1, 0xc2, 0xa4, 0xe2, 0x93, 0x53, 0x8b,
 	0x4a, 0x84, 0xa4, 0xb8, 0x38, 0x72, 0xf2, 0xd3, 0x33, 0xf3, 0x82, 0x53, 0x0b, 0x25, 0x18, 0x15,
 	0x18, 0x35, 0x98, 0x83, 0xe0, 0x7c, 0x21, 0x11, 0x2e, 0xd6, 0x92, 0xfc, 0xec, 0xd4, 0x3c, 0x09,
-	0x26, 0x05, 0x46, 0x0d, 0x9e, 0x20, 0x08, 0x27, 0x89, 0x0d, 0x6c, 0xa4, 0x31, 0x20, 0x00, 0x00,
-	0xff, 0xff, 0x9f, 0x09, 0xfe, 0x65, 0x6c, 0x00, 0x00, 0x00,
+	0x26, 0x05, 0x46, 0x0d, 0x9e, 0x20, 0x08, 0x47, 0x89, 0x8f, 0x8b, 0x27, 0xd9, 0x28, 0x3d, 0xbe,
+	0x28, 0x35, 0x3d, 0xb3, 0xb8, 0x24, 0xb5, 0x48, 0x89, 0x1f, 0x64, 0x64, 0x7a, 0x7c, 0x71, 0x65,
+	0x5e, 0x72, 0x7c, 0x49, 0x66, 0x6e, 0xaa, 0x12, 0x17, 0x17, 0x07, 0x48, 0xa0, 0x20, 0x33, 0x2f,
+	0x3d, 0x89, 0x0d, 0x6c, 0xbf, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0x65, 0xc4, 0x33, 0x02, 0x99,
+	0x00, 0x00, 0x00,
 }

@@ -3,6 +3,7 @@ package Package
 import (
 	"SLGGAME/NPackage"
 	"SLGGAME/Protocol/outside"
+	"SLGGAME/Service"
 	"bytes"
 	"encoding/binary"
 	"errors"
@@ -33,9 +34,9 @@ func (p *Package) Pack(msg network.TransitData) []byte {
 	return nil
 }
 
-func (p *Package) Unpack(binaryData []byte) (network.IMessage, error) {
+func (p *Package) Unpack(binaryData []byte) (network.IMessage, error, func(conn network.IConn)) {
 	//获取MsgType
-	type_ := int(binaryData[MsgSumLen : MsgSumLen+MsgTypeLen][0])
+	type_ := binaryData[MsgSumLen : MsgSumLen+MsgTypeLen][0]
 	verifyData := binaryData[MsgSumLen:]
 	verifySumCode := NPackage.GenerateCRCCheckCode(verifyData)
 	//创建一个从输入二进制数据的ioReader
@@ -43,10 +44,11 @@ func (p *Package) Unpack(binaryData []byte) (network.IMessage, error) {
 	switch type_ {
 	case 1:
 		msg := &AuthMessage{}
+		msg.MsgType = type_
 		//读取sum
 		msg.Sum = utils.BytesToLong(binaryData[:MsgSumLen])
 		if verifySumCode != msg.Sum {
-			return nil, errors.New("network data sum verify error")
+			return nil, errors.New("network data sum verify error"), nil
 		}
 		msg.Id = utils.ProtocalNumber(utils.GetProtoName(&outside.C2SGameCert{}))
 		_CertProto := &outside.C2SGameCert{
@@ -55,23 +57,29 @@ func (p *Package) Unpack(binaryData []byte) (network.IMessage, error) {
 		}
 		content, _ := proto.Marshal(_CertProto)
 		msg.data = content
-		return msg, nil
-		break
+		return msg, nil, nil
 	case 3:
 		msg := &LogicMessage{}
-		if err := binary.Read(dataBuff, binary.LittleEndian, &msg.Sum); err != nil {
-			return nil, err
+		if err := binary.Read(dataBuff, binary.BigEndian, &msg.Sum); err != nil {
+			return nil, err, nil
 		}
 		msg.Sum = utils.BytesToLong(binaryData[:MsgSumLen])
 		if verifySumCode != msg.Sum {
-			return nil, errors.New("network data sum verify error")
+			return nil, errors.New("network data sum verify error"), nil
 		}
-		msg.PID = utils.BytesToLong(binaryData[MsgSumLen+MsgTypeLen+MsgIsPos+4 : MsgSumLen+MsgTypeLen+MsgIsPos+4+8])
-		msg.data = []byte{} //binaryData[MsgSumLen+MsgSumLen+MsgTypeLen+MsgIsPos+8+8:]
-		return msg, nil
-		break
+		msg.MsgType = type_
+		pGuid := binaryData[MsgSumLen+MsgTypeLen+MsgIsPos+4 : MsgSumLen+MsgTypeLen+MsgIsPos+4+8]
+		msg.PID = utils.BytesToLong(pGuid)
+		msg.data = binaryData[MsgSumLen+MsgTypeLen+MsgIsPos+8+8:]
+		return msg, nil, func(conn network.IConn) {
+			if msg.PID == utils.ProtocalNumber(utils.GetProtoName(&outside.C2GRegister{})) {
+				Service.PlayerSessionManagerInstance().AddSession(conn)
+			}
+			data := []byte{}
+			data = append(append(data, byte(4)), pGuid...)
+			msgData := append(append(utils.IntToBytes(8+1+8), utils.LongToBytes(int64(utils.GenerateCRCCheckCode(data)))...), data...)
+			conn.SendByte(msgData)
+		}
 	}
-	//只解压head的信息，得到dataLen和msgID
-
-	return nil, nil
+	return nil, nil, nil
 }
