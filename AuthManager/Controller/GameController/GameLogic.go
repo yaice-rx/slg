@@ -1,4 +1,4 @@
-package GameServer
+package GameController
 
 import (
 	"SLGGAME/AuthManager/Session"

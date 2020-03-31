@@ -1,8 +1,8 @@
 package GameServer
 
 import (
-	"SLGGAME/GameServer/GameInside"
-	"SLGGAME/GameServer/GameOuter"
+	"SLGGAME/GameServer/Controller/AuthController"
+	"SLGGAME/GameServer/Controller/GameController"
 	"SLGGAME/GameServer/Package"
 	"SLGGAME/GameServer/Session"
 	"SLGGAME/Protocol/inside"
@@ -48,13 +48,15 @@ func NewServer(type_ string, serverGroup string) Service.IService {
 
 func (s *GameServer) RegisterProtoHandler() {
 	//auth注册回调
-	s.server.AddRouter(&inside.RGameAuthRegisterCallback{}, GameInside.AuthTGameRegisterResultFunc)
+	s.server.AddRouter(&inside.RGameAuthRegisterCallback{}, AuthController.AuthTGameRegisterResultFunc)
 	//auth服ping回调
-	s.server.AddRouter(&inside.RGameAuthPingCallback{}, GameInside.AuthTGamePingResultFunc)
+	s.server.AddRouter(&inside.RGameAuthPingCallback{}, AuthController.AuthTGamePingResultFunc)
 	//auth服player回调
-	s.server.AddRouter(&inside.RGameAuthLoginCallback{}, GameInside.AuthTGameLoginResultFunc)
+	s.server.AddRouter(&inside.RGameAuthLoginCallback{}, AuthController.AuthTGameLoginResultFunc)
 	//玩家登陆
-	s.server.AddRouter(&outside.C2SGameCert{}, GameOuter.C2SGameLoginCertHandler)
+	s.server.AddRouter(&outside.C2SGameCert{}, GameController.PlayerLoginHandler)
+	//网络注册
+	s.server.AddRouter(&outside.C2GRegister{}, GameController.PlayerRegisterHandler)
 }
 
 func (s *GameServer) BeforeRunThreadHook() {
@@ -100,7 +102,7 @@ func (s *GameServer) Run() {
 		close(insidePort)
 	}()
 	//开启外网
-	ServerConfigMgr.OutHost = "10.0.0.10"
+	ServerConfigMgr.OutHost = "127.0.0.1"
 	go func() {
 		data := s.server.Listen(Package.NewPackage(), "tcp", 30001, 30100,
 			func(conn interface{}) bool {
@@ -110,7 +112,7 @@ func (s *GameServer) Run() {
 	}()
 	ServerConfigMgr.OutPort = <-outerPort
 	//开启内网
-	ServerConfigMgr.InHost = "10.0.0.10"
+	ServerConfigMgr.InHost = "127.0.0.1"
 	go func() {
 		data := s.server.Listen(nil, "tcp", 30001, 30100,
 			func(conn interface{}) bool {

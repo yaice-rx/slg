@@ -1,7 +1,7 @@
-package GameInside
+package AuthController
 
 import (
-	"SLGGAME/GameServer/GameOuter"
+	"SLGGAME/GameServer/Controller/GameController"
 	"SLGGAME/GameServer/Session"
 	"SLGGAME/Protocol/inside"
 	"github.com/gogo/protobuf/proto"
@@ -30,5 +30,6 @@ func AuthTGameLoginResultFunc(conn network.IConn, content []byte) {
 	logrus.Info("玩家登陆验证成功")
 	data := &inside.RGameAuthLoginCallback{}
 	proto.Unmarshal(content, data)
-	Session.PlayerContainsGameMgr.Get(data.Guid).SendByte(GameOuter.TokenLoginData)
+	playerConn := Session.PlayerContainsGameMgr.Get(data.Guid)
+	playerConn.SendByte(GameController.TokenLoginData)
 }

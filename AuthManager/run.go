@@ -1,11 +1,10 @@
 package AuthManager
 
 import (
-	"SLGGAME/AuthManager/GameServer"
-	"SLGGAME/AuthManager/Logic"
+	"SLGGAME/AuthManager/Controller/GameController"
+	"SLGGAME/AuthManager/Controller/LogicController"
 	"SLGGAME/Protocol/inside"
 	"SLGGAME/Service"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/yaice-rx/yaice"
 	"github.com/yaice-rx/yaice/config"
 	"github.com/yaice-rx/yaice/log"
@@ -38,11 +37,11 @@ func NewServer(type_ string, serverGroup string) Service.IService {
 
 func (s *AuthServer) RegisterProtoHandler() {
 	//服务内部注册
-	s.server.AddRouter(&inside.RGameAuthRegisterRequest{}, GameServer.RegisterConnHandler)
+	s.server.AddRouter(&inside.RGameAuthRegisterRequest{}, GameController.RegisterConnHandler)
 	//Ping
-	s.server.AddRouter(&inside.RGameAuthPingRequest{}, GameServer.PingConnHandler)
+	s.server.AddRouter(&inside.RGameAuthPingRequest{}, GameController.PingConnHandler)
 	//玩家登陆验证
-	s.server.AddRouter(&inside.RGameAuthLoginRequest{}, GameServer.LoginHandler)
+	s.server.AddRouter(&inside.RGameAuthLoginRequest{}, GameController.LoginHandler)
 }
 
 func (s *AuthServer) BeforeRunThreadHook() {
@@ -63,14 +62,14 @@ func (s *AuthServer) Run() {
 		close(insidePort)
 	}()
 	//开启外网
-	s.confMgr.SetOutHost("10.0.0.10")
+	s.confMgr.SetOutHost("127.0.0.1")
 	s.confMgr.SetOutPort(50001)
 	go func() {
-		http.HandleFunc("/login_dev", s.Login)
+		http.HandleFunc("/login_dev", LogicController.Login)
 		http.ListenAndServe(":50001", nil)
 	}()
 	//开启内网
-	s.confMgr.SetInHost("10.0.0.10")
+	s.confMgr.SetInHost("127.0.0.1")
 	go func() {
 		data := s.server.Listen(nil, "tcp", 30001, 30100, func(conn interface{}) bool {
 			return true
@@ -94,16 +93,4 @@ func (s *AuthServer) ObserverPProf(addr string) {
 		}
 		os.Exit(0)
 	}()
-}
-
-func (s *AuthServer) Login(w http.ResponseWriter, r *http.Request) {
-	result := Service.Token{
-		Guid:      utils.GenSonyflake(),
-		SessionId: config.ConfInstance().GetPid(),
-		Port:      GameServer.SnapPort,
-		Host:      GameServer.SnapHost,
-		Result:    1,
-	}
-	data, _ := jsoniter.ConfigCompatibleWithStandardLibrary.Marshal(result)
-	w.Write(Logic.BuildToken(data))
 }

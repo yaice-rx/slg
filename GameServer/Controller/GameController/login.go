@@ -1,4 +1,4 @@
-package GameOuter
+package GameController
 
 import (
 	"SLGGAME/GameServer/Session"
@@ -7,6 +7,7 @@ import (
 	"SLGGAME/Service"
 	"github.com/golang/protobuf/proto"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice/log"
 	"github.com/yaice-rx/yaice/network"
 	"github.com/yaice-rx/yaice/utils"
@@ -22,7 +23,7 @@ type cert struct {
 
 var TokenLoginData []byte
 
-func C2SGameLoginCertHandler(conn network.IConn, content []byte) {
+func PlayerLoginHandler(conn network.IConn, content []byte) {
 	//添加在线玩家列表
 	log.AppLogger.Info("有服务器连接上来了:" + conn.GetConn().(*net.TCPConn).RemoteAddr().String())
 	_ProtoData := outside.C2SGameCert{}
@@ -43,4 +44,8 @@ func C2SGameLoginCertHandler(conn network.IConn, content []byte) {
 	severConn := Session.AuthContainsGameMgr.Get(token.SessionId)
 	severConn.Send(&inside.RGameAuthLoginRequest{PlayerGuid: token.Guid})
 	TokenLoginData = msgData
+}
+
+func PlayerRegisterHandler(conn network.IConn, content []byte) {
+	logrus.Info("玩家：", conn.GetGuid(), " ,已经注册成功")
 }

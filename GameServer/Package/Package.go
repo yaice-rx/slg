@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/gogo/protobuf/proto"
+	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice/network"
 	"github.com/yaice-rx/yaice/utils"
 )
@@ -71,6 +72,7 @@ func (p *Package) Unpack(binaryData []byte) (network.IMessage, error, func(conn 
 		msg.PID = utils.BytesToLong(pGuid)
 		msg.data = binaryData[MsgSumLen+MsgTypeLen+MsgIsPos+8+8:]
 		return msg, nil, func(conn network.IConn) {
+			logrus.Info("玩家在发送消息，玩家是:", conn.GetGuid())
 			data := []byte{}
 			data = append(append(data, byte(4)), pGuid...)
 			msgData := append(append(utils.IntToBytes(8+1+8), utils.LongToBytes(int64(utils.GenerateCRCCheckCode(data)))...), data...)
