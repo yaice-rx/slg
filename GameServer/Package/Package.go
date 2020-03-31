@@ -3,7 +3,6 @@ package Package
 import (
 	"SLGGAME/NPackage"
 	"SLGGAME/Protocol/outside"
-	"SLGGAME/Service"
 	"bytes"
 	"encoding/binary"
 	"errors"
@@ -72,9 +71,6 @@ func (p *Package) Unpack(binaryData []byte) (network.IMessage, error, func(conn 
 		msg.PID = utils.BytesToLong(pGuid)
 		msg.data = binaryData[MsgSumLen+MsgTypeLen+MsgIsPos+8+8:]
 		return msg, nil, func(conn network.IConn) {
-			if msg.PID == utils.ProtocalNumber(utils.GetProtoName(&outside.C2GRegister{})) {
-				Service.PlayerSessionManagerInstance().AddSession(conn)
-			}
 			data := []byte{}
 			data = append(append(data, byte(4)), pGuid...)
 			msgData := append(append(utils.IntToBytes(8+1+8), utils.LongToBytes(int64(utils.GenerateCRCCheckCode(data)))...), data...)

@@ -1,11 +1,10 @@
 package AuthManager
 
 import (
+	"SLGGAME/AuthManager/GameServer"
 	"SLGGAME/AuthManager/Logic"
-	"SLGGAME/AuthManager/ServiceGroup"
 	"SLGGAME/Protocol/inside"
 	"SLGGAME/Service"
-	"SLGGAME/Token"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/yaice-rx/yaice"
 	"github.com/yaice-rx/yaice/config"
@@ -14,7 +13,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"time"
 )
 
 type AuthServer struct {
@@ -40,11 +38,11 @@ func NewServer(type_ string, serverGroup string) Service.IService {
 
 func (s *AuthServer) RegisterProtoHandler() {
 	//服务内部注册
-	s.server.AddRouter(&inside.RGameAuthRegisterRequest{}, ServiceGroup.RegisterConnHandler)
+	s.server.AddRouter(&inside.RGameAuthRegisterRequest{}, GameServer.RegisterConnHandler)
 	//Ping
-	s.server.AddRouter(&inside.RGameAuthPingRequest{}, ServiceGroup.PingConnHandler)
+	s.server.AddRouter(&inside.RGameAuthPingRequest{}, GameServer.PingConnHandler)
 	//玩家登陆验证
-	s.server.AddRouter(&inside.RGameAuthLoginRequest{}, ServiceGroup.LoginHandler)
+	s.server.AddRouter(&inside.RGameAuthLoginRequest{}, GameServer.LoginHandler)
 }
 
 func (s *AuthServer) BeforeRunThreadHook() {
@@ -74,7 +72,9 @@ func (s *AuthServer) Run() {
 	//开启内网
 	s.confMgr.SetInHost("10.0.0.10")
 	go func() {
-		data := s.server.Listen(nil, "tcp", 30001, 30100)
+		data := s.server.Listen(nil, "tcp", 30001, 30100, func(conn interface{}) bool {
+			return true
+		})
 		insidePort <- data
 	}()
 	s.confMgr.SetInPort(<-insidePort)
@@ -97,11 +97,11 @@ func (s *AuthServer) ObserverPProf(addr string) {
 }
 
 func (s *AuthServer) Login(w http.ResponseWriter, r *http.Request) {
-	result := Token.Token{
-		Guid:      time.Now().Unix(),
-		SessionId: utils.GenSonyflake(),
-		Port:      s.confMgr.GetInPort(),
-		Host:      s.confMgr.GetInHost(),
+	result := Service.Token{
+		Guid:      utils.GenSonyflake(),
+		SessionId: config.ConfInstance().GetPid(),
+		Port:      GameServer.SnapPort,
+		Host:      GameServer.SnapHost,
 		Result:    1,
 	}
 	data, _ := jsoniter.ConfigCompatibleWithStandardLibrary.Marshal(result)

@@ -1,8 +1,10 @@
 package GameOuter
 
 import (
+	"SLGGAME/GameServer/Session"
+	"SLGGAME/Protocol/inside"
 	"SLGGAME/Protocol/outside"
-	"SLGGAME/Token"
+	"SLGGAME/Service"
 	"github.com/golang/protobuf/proto"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/yaice-rx/yaice/log"
@@ -18,7 +20,10 @@ type cert struct {
 	LoginSeq   int64
 }
 
-func C2SGameCertHandler(conn network.IConn, content []byte) {
+var TokenLoginData []byte
+
+func C2SGameLoginCertHandler(conn network.IConn, content []byte) {
+	//添加在线玩家列表
 	log.AppLogger.Info("有服务器连接上来了:" + conn.GetConn().(*net.TCPConn).RemoteAddr().String())
 	_ProtoData := outside.C2SGameCert{}
 	err := proto.Unmarshal(content, &_ProtoData)
@@ -27,10 +32,15 @@ func C2SGameCertHandler(conn network.IConn, content []byte) {
 	}
 	tokenSignLen := _ProtoData.Token[0:2]
 	tokenLen := utils.BytesToShort(tokenSignLen)
-	var token Token.Token
+	var token Service.Token
 	jsoniter.ConfigCompatibleWithStandardLibrary.Unmarshal(_ProtoData.Token[2+tokenLen:], &token)
+	//将玩家加入在线列表
+	Session.PlayerContainsGameMgr.Add(token.Guid, conn)
 	data := []byte{}
 	data = append(append(append(append(data, byte(2)), byte(1)), utils.LongToBytes(-24056111824897)...), utils.LongToBytes(_ProtoData.LoginSeq)...)
 	msgData := append(append(utils.IntToBytes(8+1+1+8+8), utils.LongToBytes(int64(utils.GenerateCRCCheckCode(data)))...), data...)
-	conn.SendByte(msgData)
+	//todo 向Auth服务器请求连接，通过玩家的请求的消息中获取对应的auth服务器的guid
+	severConn := Session.AuthContainsGameMgr.Get(token.SessionId)
+	severConn.Send(&inside.RGameAuthLoginRequest{PlayerGuid: token.Guid})
+	TokenLoginData = msgData
 }

@@ -3,7 +3,6 @@ package Logic
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/sirupsen/logrus"
 	"github.com/yaice-rx/yaice/utils"
 )
 
@@ -15,7 +14,6 @@ func BuildToken(data []byte) []byte {
 	md5 := h.Sum(nil)
 	md5str := hex.EncodeToString(md5)
 	md5len := utils.ShortToBytes(int16(len(md5str)))
-	logrus.Info("md5 :", []byte(md5str))
 	loginData := append(md5len, append([]byte(md5str), data...)...)
 	return loginData
 }

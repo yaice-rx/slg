@@ -5,15 +5,17 @@ package inside;
 message r_game_auth_register_request{
     string  host = 1;
     int32   port = 2;
+    uint64  guid = 3;
 }
 
 //向服务器定时发送ping,保证存活
 message r_game_auth_register_callback{
+    uint64  guid = 1;
 }
 
 //ping
 message r_game_auth_ping_request{
-    string pid = 1;
+    uint64 pid = 1;
 }
 
 //ping
@@ -22,10 +24,11 @@ message r_game_auth_ping_callback{
 
 //login
 message r_game_auth_login_request{
-    int64   playerGuid = 1;
+    uint64   playerGuid = 1;
 }
 
 //login
 message r_game_auth_login_callback{
-    bool   state = 1;
+    bool    state = 1;
+    uint64  guid  = 2;
 }

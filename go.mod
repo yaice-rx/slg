@@ -12,6 +12,6 @@ require (
 	github.com/json-iterator/go v1.1.9
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
-	github.com/yaice-rx/yaice v0.0.0-20200326104547-5b7bd0995e43
+	github.com/yaice-rx/yaice v0.0.0-20200331031845-b91fc9472a10
 	go.uber.org/zap v1.13.0
 )

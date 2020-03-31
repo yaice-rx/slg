@@ -4,6 +4,7 @@ import (
 	"SLGGAME/GameServer/GameInside"
 	"SLGGAME/GameServer/GameOuter"
 	"SLGGAME/GameServer/Package"
+	"SLGGAME/GameServer/Session"
 	"SLGGAME/Protocol/inside"
 	"SLGGAME/Protocol/outside"
 	"SLGGAME/Service"
@@ -12,12 +13,12 @@ import (
 	"github.com/yaice-rx/yaice"
 	"github.com/yaice-rx/yaice/config"
 	"github.com/yaice-rx/yaice/log"
+	"github.com/yaice-rx/yaice/network"
 	"github.com/yaice-rx/yaice/utils"
 	"net/http"
 	"os"
 	"runtime"
 	"strconv"
-	"time"
 )
 
 type GameServer struct {
@@ -46,27 +47,32 @@ func NewServer(type_ string, serverGroup string) Service.IService {
 }
 
 func (s *GameServer) RegisterProtoHandler() {
-	s.server.AddRouter(&inside.RGameAuthPingCallback{}, GameInside.LoginResultHandler)
+	//auth注册回调
+	s.server.AddRouter(&inside.RGameAuthRegisterCallback{}, GameInside.AuthTGameRegisterResultFunc)
+	//auth服ping回调
+	s.server.AddRouter(&inside.RGameAuthPingCallback{}, GameInside.AuthTGamePingResultFunc)
+	//auth服player回调
+	s.server.AddRouter(&inside.RGameAuthLoginCallback{}, GameInside.AuthTGameLoginResultFunc)
 	//玩家登陆
-	s.server.AddRouter(&outside.C2SGameCert{}, GameOuter.C2SGameCertHandler)
+	s.server.AddRouter(&outside.C2SGameCert{}, GameOuter.C2SGameLoginCertHandler)
 }
 
 func (s *GameServer) BeforeRunThreadHook() {
 	s.server.WatchServeNodeData(func(isAdd mvccpb.Event_EventType, key []byte, value config.IConfig) {
 		switch isAdd {
 		case mvccpb.PUT:
-			if value.GetTypeId() == "auth" {
-				conn := s.server.Dial(nil, "tcp", value.GetInHost()+":"+strconv.Itoa(value.GetInPort()))
+			if value.GetTypeId() == "auth" && Session.AuthContainsGameMgr.Get(value.GetPid()) == nil {
+				conn := s.server.Dial(nil, "tcp", value.GetInHost()+":"+strconv.Itoa(value.GetInPort()),
+					network.WithMax(10))
 				if conn == nil {
 					log.AppLogger.Debug("connect error")
 					return
 				}
-				conn.Send(&inside.RGameAuthRegisterRequest{Host: s.config.OutHost, Port: int32(s.config.OutPort)})
-				go func() {
-					for _ = range time.Tick(5 * time.Second) {
-						conn.Send(&inside.RGameAuthPingRequest{})
-					}
-				}()
+				conn.Send(&inside.RGameAuthRegisterRequest{
+					Host: s.config.OutHost,
+					Port: int32(s.config.OutPort),
+					Guid: config.ConfInstance().GetPid(),
+				})
 			}
 			break
 		case mvccpb.DELETE:
@@ -96,34 +102,40 @@ func (s *GameServer) Run() {
 	//开启外网
 	ServerConfigMgr.OutHost = "10.0.0.10"
 	go func() {
-		data := s.server.Listen(Package.NewPackage(), "tcp", 30001, 30100)
+		data := s.server.Listen(Package.NewPackage(), "tcp", 30001, 30100,
+			func(conn interface{}) bool {
+				return true
+			})
 		outerPort <- data
 	}()
 	ServerConfigMgr.OutPort = <-outerPort
 	//开启内网
 	ServerConfigMgr.InHost = "10.0.0.10"
 	go func() {
-		data := s.server.Listen(nil, "tcp", 30001, 30100)
+		data := s.server.Listen(nil, "tcp", 30001, 30100,
+			func(conn interface{}) bool {
+				return true
+			})
 		insidePort <- data
 	}()
 	ServerConfigMgr.InPort = <-insidePort
 	//注册服务配置
 	s.server.RegisterServeNodeData()
 	//开启连接
-	for _, serverConf := range s.server.GetServeNodeData("") {
-		if serverConf.GetTypeId() == "auth" {
-			conn := s.server.Dial(nil, "tcp", serverConf.GetInHost()+":"+strconv.Itoa(serverConf.GetInPort()))
+	for _, value := range s.server.GetServeNodeData("") {
+		if value.GetTypeId() == "auth" && Session.AuthContainsGameMgr.Get(value.GetPid()) == nil {
+			conn := s.server.Dial(nil, "tcp", value.GetInHost()+":"+strconv.Itoa(value.GetInPort()),
+				network.WithMax(10))
 			if conn == nil {
 				log.AppLogger.Debug("connect error")
 				return
 			}
 			//注册信息
-			conn.Send(&inside.RGameAuthRegisterRequest{Host: s.config.OutHost, Port: int32(s.config.OutPort)})
-			go func() {
-				for _ = range time.Tick(5 * time.Second) {
-					conn.Send(&inside.RGameAuthPingRequest{})
-				}
-			}()
+			conn.Send(&inside.RGameAuthRegisterRequest{
+				Host: s.config.OutHost,
+				Port: int32(s.config.OutPort),
+				Guid: config.ConfInstance().GetPid(),
+			})
 		}
 	}
 }
