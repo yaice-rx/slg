@@ -13,8 +13,6 @@ import (
 func AuthTGameRegisterResultFunc(conn network.IConn, content []byte) {
 	data := &inside.RGameAuthRegisterCallback{}
 	proto.Unmarshal(content, data)
-	//添加进在线列表
-	Session.AuthContainsGameMgr.Add(data.Guid, conn)
 	go func() {
 		for _ = range time.Tick(5 * time.Second) {
 			conn.Send(&inside.RGameAuthPingRequest{})

@@ -64,12 +64,14 @@ func (s *GameServer) BeforeRunThreadHook() {
 		switch isAdd {
 		case mvccpb.PUT:
 			if value.GetTypeId() == "auth" && Session.AuthContainsGameMgr.Get(value.GetPid()) == nil {
+				logrus.Info("etcd connect  1")
 				conn := s.server.Dial(nil, "tcp", value.GetInHost()+":"+strconv.Itoa(value.GetInPort()),
 					network.WithMax(10))
 				if conn == nil {
 					log.AppLogger.Debug("connect error")
 					return
 				}
+				Session.AuthContainsGameMgr.Add(value.GetPid(), conn)
 				conn.Send(&inside.RGameAuthRegisterRequest{
 					Host: s.config.OutHost,
 					Port: int32(s.config.OutPort),
@@ -126,12 +128,14 @@ func (s *GameServer) Run() {
 	//开启连接
 	for _, value := range s.server.GetServeNodeData("") {
 		if value.GetTypeId() == "auth" && Session.AuthContainsGameMgr.Get(value.GetPid()) == nil {
+			logrus.Info("etcd connect  2", "data:", value)
 			conn := s.server.Dial(nil, "tcp", value.GetInHost()+":"+strconv.Itoa(value.GetInPort()),
 				network.WithMax(10))
 			if conn == nil {
 				log.AppLogger.Debug("connect error")
 				return
 			}
+			Session.AuthContainsGameMgr.Add(value.GetPid(), conn)
 			//注册信息
 			conn.Send(&inside.RGameAuthRegisterRequest{
 				Host: s.config.OutHost,

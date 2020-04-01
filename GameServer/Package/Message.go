@@ -5,11 +5,11 @@ type AuthMessage struct {
 	Sum      int64 //消息的ID
 	IsPos    int64 //位置编号
 	LoginSeq int64 //登陆编码
-	Id       int64 //消息编码
+	Id       int32 //消息编码
 	data     []byte
 }
 
-func (m *AuthMessage) GetMsgId() int64 {
+func (m *AuthMessage) GetMsgId() int32 {
 	return m.Id
 }
 
@@ -23,12 +23,12 @@ type LogicMessage struct {
 	Sum     int64 //消息的ID
 	IsPos   int64 //位置编号
 	PID     int64
-	PEnum   int64
+	PEnum   int32
 	data    []byte
 }
 
-func (m *LogicMessage) GetMsgId() int64 {
-	return m.PID
+func (m *LogicMessage) GetMsgId() int32 {
+	return m.PEnum
 }
 
 func (m *LogicMessage) GetData() []byte {
