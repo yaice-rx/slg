@@ -1,6 +1,7 @@
 package Service
 
 type IService interface {
+
 	RegisterProtoHandler()
 	BeforeRunThreadHook()
 	AfterRunThreadHook()

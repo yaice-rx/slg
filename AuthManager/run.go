@@ -2,9 +2,10 @@ package AuthManager
 
 import (
 	"SLGGAME/AuthManager/Controller/GameController"
-	"SLGGAME/AuthManager/Controller/LogicController"
+	"SLGGAME/CoreManager/RabbitMQ"
 	"SLGGAME/Protocol/inside"
 	"SLGGAME/Service"
+	"fmt"
 	"github.com/yaice-rx/yaice"
 	"github.com/yaice-rx/yaice/config"
 	"github.com/yaice-rx/yaice/log"
@@ -53,12 +54,10 @@ func (s *AuthServer) AfterRunThreadHook() {
 }
 
 func (s *AuthServer) Run() {
-	//设置监听端口通道
-	outerPort := make(chan int)
+	/*//设置监听端口通道
 	insidePort := make(chan int)
 	//关闭端口通道
 	defer func() {
-		close(outerPort)
 		close(insidePort)
 	}()
 	//开启外网
@@ -78,7 +77,19 @@ func (s *AuthServer) Run() {
 	}()
 	s.confMgr.SetInPort(<-insidePort)
 	//注册服务配置
-	s.server.RegisterServeNodeData()
+	s.server.RegisterServeNodeData()*/
+
+	//test
+	rabbitMqMgr := RabbitMQ.NewMessageQueue()
+	rabbitMqMgr.ConnectMQ("localhost:5672","test","topic")
+	rabbitMqMgr.QueueDeclare("test","test")
+	data := rabbitMqMgr.Consume("test","")
+	if nil != data{
+		for  d := range data {
+			fmt.Println(string(d.Body))
+		}
+	}
+	//end
 	return
 }
 

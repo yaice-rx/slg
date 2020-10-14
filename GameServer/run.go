@@ -19,6 +19,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 )
 
 type GameServer struct {
@@ -81,8 +82,12 @@ func (s *GameServer) BeforeRunThreadHook() {
 		case mvccpb.DELETE:
 			keyStr := string(key)
 			if keyStr != "" {
-				//keyMap := strings.Split(keyStr,"\\")
-				//Ikey,_ := strconv.ParseUint(keyMap[3], 10, 64)
+				keyMap := strings.Split(keyStr,"\\")
+				if keyMap[2] == "auth"{
+					connGuid,_ := strconv.ParseUint(keyMap[3], 10, 64)
+					Session.AuthContainsGameMgr.Get(connGuid).Close()
+					Session.AuthContainsGameMgr.Remove(connGuid)
+				}
 			}
 			break
 		}

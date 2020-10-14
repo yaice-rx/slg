@@ -1,7 +1,7 @@
 package Package
 
 import (
-	"SLGGAME/NPackage"
+	"SLGGAME/CoreManager/NPackage"
 	"SLGGAME/Protocol/outside"
 	"bytes"
 	"encoding/binary"

@@ -3,14 +3,15 @@ package main
 import (
 	"SLGGAME/AuthManager"
 	"SLGGAME/GameServer"
+	"SLGGAME/RouterManager"
 	"SLGGAME/Service"
 	"flag"
 	"fmt"
 	_ "net/http/pprof"
 )
 
-var Type = flag.String("type", "auth", "Input Server Type")
-var Group = flag.String("group", "king_war", "Input Server Type")
+var Type 	= flag.String("type", "auth", "Input Server Type")
+var Group 	= flag.String("group", "king_war", "Input Server Type")
 
 func main() {
 	flag.Parse()
@@ -28,6 +29,10 @@ func main() {
 	case "game":
 		serve = GameServer.NewServer(*Type, *Group)
 		serve.ObserverPProf(":1593")
+		break
+	case "router":
+		serve = RouterManager.NewServer(*Type, *Group)
+		serve.ObserverPProf(":1594")
 		break
 	default:
 		fmt.Println("please select service type")
